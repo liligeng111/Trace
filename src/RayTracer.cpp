@@ -17,7 +17,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 {
     ray r( vec3f(0,0,0), vec3f(0,0,0) );
     scene->getCamera()->rayThrough( x,y,r );
-	return traceRay( scene, r, vec3f(1.0,1.0,1.0), 0 ).clamp();
+	return traceRay( scene, r, vec3f(1.0,1.0,1.0), maxDepth ).clamp();
 }
 
 // Do recursive ray tracing!  You'll want to insert a lot of code here
@@ -40,7 +40,15 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// rays.
 
 		const Material& m = i.getMaterial();
-		return m.shade(scene, r, i);
+		vec3f I = m.shade(scene, r, i);
+		if (depth <= 0) return I;
+		
+		//reflection
+		double NL = -i.N.dot(r.getDirection());
+		ray R = ray(r.at(i.t), i.N * (2 * NL) + r.getDirection());
+		I += m.kr.time(traceRay(scene, R, thresh, depth - 1)).clamp(); 
+
+		return I;
 	
 	} else {
 		// No intersection.  This ray travels to infinity, so we color
@@ -56,6 +64,8 @@ RayTracer::RayTracer()
 	buffer = NULL;
 	buffer_width = buffer_height = 256;
 	scene = NULL;
+
+	maxDepth = 0;
 
 	m_bSceneLoaded = false;
 }

@@ -89,7 +89,7 @@ void TraceUI::cb_sizeSlides(Fl_Widget* o, void* v)
 
 void TraceUI::cb_depthSlides(Fl_Widget* o, void* v)
 {
-	((TraceUI*)(o->user_data()))->m_nDepth=int( ((Fl_Slider *)o)->value() ) ;
+	((TraceUI*)(o->user_data()))->raytracer->setMaxDepth(int( ((Fl_Slider *)o)->value()));
 }
 
 void TraceUI::cb_render(Fl_Widget* o, void* v)
@@ -190,11 +190,6 @@ int TraceUI::getSize()
 	return m_nSize;
 }
 
-int TraceUI::getDepth()
-{
-	return m_nDepth;
-}
-
 // menu definition
 Fl_Menu_Item TraceUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -212,7 +207,6 @@ Fl_Menu_Item TraceUI::menuitems[] = {
 
 TraceUI::TraceUI() {
 	// init.
-	m_nDepth = 0;
 	m_nSize = 150;
 	m_mainWindow = new Fl_Window(100, 40, 320, 100, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
@@ -229,7 +223,7 @@ TraceUI::TraceUI() {
 		m_depthSlider->minimum(0);
 		m_depthSlider->maximum(10);
 		m_depthSlider->step(1);
-		m_depthSlider->value(m_nDepth);
+		m_depthSlider->value(0);
 		m_depthSlider->align(FL_ALIGN_RIGHT);
 		m_depthSlider->callback(cb_depthSlides);
 

@@ -40,13 +40,11 @@ public:
 	void		setRayTracer(RayTracer *tracer);
 
 	int			getSize();
-	int			getDepth();
 
 private:
 	RayTracer*	raytracer;
 
 	int			m_nSize;
-	int			m_nDepth;
 
 // static class members
 	static Fl_Menu_Item menuitems[];

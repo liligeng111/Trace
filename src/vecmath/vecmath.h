@@ -53,6 +53,12 @@ public:
 		{ n[0] *= d; n[1] *= d; n[2] *= d; return *this; }
 	vec3f& operator /= ( const double d )
 		{ n[0] /= d; n[1] /= d; n[2] /= d; return *this; }
+	
+	vec3f time(const vec3f& a) const
+	{
+		vec3f v = vec3f(a.n[0]*n[0], a.n[1]*n[1], a.n[2]*n[2]);
+		return v;
+	}
 
 	double& operator []( int i )
 		{ return n[i]; }
@@ -675,6 +681,7 @@ inline vec3f::vec3f( const vec4f& v )
 	n[1] = v[1]; 
 	n[2] = v[2]; 
 }
+
 /*
 inline vec3f clamp( const vec3f& other )
 {

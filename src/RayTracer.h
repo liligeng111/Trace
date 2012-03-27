@@ -24,6 +24,8 @@ public:
 
 	bool loadScene( char* fn );
 
+	void setMaxDepth(int m){maxDepth = m;}
+
 	bool sceneLoaded();
 
 private:
@@ -31,6 +33,8 @@ private:
 	int buffer_width, buffer_height;
 	int bufferSize;
 	Scene *scene;
+	
+	int maxDepth;
 
 	bool m_bSceneLoaded;
 };
