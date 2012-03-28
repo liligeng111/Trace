@@ -27,6 +27,7 @@ public:
 	void setMaxDepth(int m){maxDepth = m;}
 
 	bool sceneLoaded();
+	
 
 private:
 	unsigned char *buffer;
@@ -38,5 +39,4 @@ private:
 
 	bool m_bSceneLoaded;
 };
-
 #endif // __RAYTRACER_H__

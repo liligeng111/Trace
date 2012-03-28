@@ -92,6 +92,24 @@ void TraceUI::cb_depthSlides(Fl_Widget* o, void* v)
 	((TraceUI*)(o->user_data()))->raytracer->setMaxDepth(int( ((Fl_Slider *)o)->value()));
 }
 
+
+DWORD WINAPI ThreadFunc(HANDLE Thread)
+{
+	int start = ((para*)Thread)->start;
+	int stop = ((para*)Thread)->stop;
+	int width = ((para*)Thread)->width;
+	RayTracer* tracer = ((para*)Thread)->tracer;
+	for( int j = start; j < stop; ++j )
+	{
+		for( int i = 0; i < width; ++i )
+		{
+			if (done) return 0;
+			tracer->tracePixel(i,j);
+		}
+	}
+	return 0;
+}
+
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
 	char buffer[256];
@@ -118,6 +136,20 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 		pUI->m_traceGlWindow->refresh();
 		Fl::check();
 		Fl::flush();
+		
+	
+		para* p = new para();
+		p->start = height / 2;
+		p->stop = height;
+		p->width = width;
+		p->tracer = pUI->raytracer;
+
+
+		HANDLE Thread;
+		DWORD dwThreadId;
+		Thread=CreateThread(NULL,0,ThreadFunc,p,0,&dwThreadId);	
+
+		height /= 2;
 
 		for (int y=0; y<height; y++) {
 			for (int x=0; x<width; x++) {
@@ -161,6 +193,10 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 			pUI->m_traceGlWindow->label(buffer);
 			
 		}
+		
+		WaitForSingleObject(Thread,INFINITE);
+		CloseHandle(Thread);
+
 		done=true;
 		pUI->m_traceGlWindow->refresh();
 

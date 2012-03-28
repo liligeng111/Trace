@@ -65,4 +65,13 @@ private:
 	static void cb_stop(Fl_Widget* o, void* v);
 };
 
+
+struct para
+{
+	int start;
+	int stop;
+	int width;
+	RayTracer* tracer;
+};
+
 #endif
