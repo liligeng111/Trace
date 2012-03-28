@@ -53,5 +53,13 @@ vec3f PointLight::shadowAttenuation(const vec3f& P) const
 {
     // YOUR CODE HERE:
     // You should implement shadow-handling code here.
+	//TODO:transprant
+	ray r = ray(P, getDirection(P));
+	isect i;
+	if (scene->intersect(r, i))
+	{
+		return vec3f(0, 0, 0);
+	}
+
     return vec3f(1,1,1);
 }

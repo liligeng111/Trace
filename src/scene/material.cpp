@@ -21,6 +21,8 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	
 	//intersection point
 	vec3f point = r.at(i.t);
+	bool istransmissive = abs(index - 1.0) > NORMAL_EPSILON || !kt.iszero();
+	vec3f rate = vec3f(1, 1, 1) - kt;
 
 	vec3f I = ke;
 
@@ -35,7 +37,8 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		double NL = i.N.dot(L);
 
 		//diffuse
-		I += (atten * NL).time(kd).clamp();
+		if (istransmissive) I += (atten * NL).time(kd).time(rate).clamp();
+		else I += (atten * NL).time(kd).clamp();
 
 		//specular
 		vec3f R = i.N * (2 * NL) - L;

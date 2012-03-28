@@ -1,4 +1,4 @@
-#include <cmath>
+ #include <cmath>
 #include <assert.h>
 
 #include "Box.h"
@@ -48,15 +48,16 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 
 	for (int j = 0; j < 3; j++)
 	{
+		double size = 0.5;
 		if (d.n[j] > 0)
 		{
-			min[j] = (bounds.min[j] - p.n[j]) / d.n[j];
-			max[j] = (bounds.max[j] - p.n[j]) / d.n[j];
+			min[j] = (-size - p.n[j]) / d.n[j];
+			max[j] = (size - p.n[j]) / d.n[j];
 		}
 		else
 		{
-			min[j] = (bounds.max[j] - p.n[j]) / d.n[j];
-			max[j] = (bounds.min[j] - p.n[j]) / d.n[j];
+			min[j] = (size - p.n[j]) / d.n[j];
+			max[j] = (-size - p.n[j]) / d.n[j];
 		}
 	}
 
@@ -73,32 +74,34 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	if (min[max_of_min] > 0)
 	{
 		i.t = min[max_of_min];
+		int a = d[max_of_min] > 0 ? -1 : 1;
 		switch (max_of_min)
 		{
 		case 0: 
-			i.N = vec3f(-1, 0, 0);
+			i.N = vec3f(a, 0, 0);
 			return true;
 		case 1:
-			i.N = vec3f(0, -1, 0);
+			i.N = vec3f(0, a, 0);
 			return true;
 		default:
-			i.N = vec3f(0, 0, -1);
+			i.N = vec3f(0, 0, a);
 			return true;
 		}
 	}
 	else
 	{
 		i.t = max[min_of_max];
-		switch (min_of_max)
+		int a = d[max_of_min] > 0 ? -1 : 1;
+		switch (max_of_min)
 		{
 		case 0: 
-			i.N = vec3f(1, 0, 0);
+			i.N = vec3f(a, 0, 0);
 			return true;
 		case 1:
-			i.N = vec3f(0, 1, 0);
+			i.N = vec3f(0, a, 0);
 			return true;
 		default:
-			i.N = vec3f(0, 0, 1);
+			i.N = vec3f(0, 0, a);
 			return true;
 		}
 	}

@@ -46,7 +46,14 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		//reflection
 		double NL = -i.N.dot(r.getDirection());
 		ray R = ray(r.at(i.t), i.N * (2 * NL) + r.getDirection());
-		I += m.kr.time(traceRay(scene, R, thresh, depth - 1)).clamp(); 
+		I += (m.kr.time(traceRay(scene, R, thresh, depth - 1))).clamp(); 
+
+		//refraction		
+		if (abs(m.index - 1.0) < NORMAL_EPSILON && m.kt.iszero()) return I;
+		double n = 1 / m.index;
+		double LONG_TERM = n * NL - sqrt(1 - n * n * (1 - NL * NL));
+		ray T = ray(r.at(i.t), (i.N * LONG_TERM + r.getDirection() * n).normalize());
+		I += (m.kt.time(traceRay(scene, T, thresh, depth - 1))).clamp(); 
 
 		return I;
 	
