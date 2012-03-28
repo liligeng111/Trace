@@ -68,7 +68,7 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	if (max[min_of_max] < min[max_of_min]) return false;
 
 	//t < 0
-	if (max[min_of_max] < 0) return false;
+	if (max[min_of_max] < RAY_EPSILON) return false;
 	
 	i.obj = this;
 	if (min[max_of_min] > 0)
@@ -91,7 +91,7 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	else
 	{
 		i.t = max[min_of_max];
-		int a = d[max_of_min] > 0 ? -1 : 1;
+		int a = d[max_of_min] > 0 ? 1 : -1;
 		switch (max_of_min)
 		{
 		case 0: 

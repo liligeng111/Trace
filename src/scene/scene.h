@@ -19,6 +19,7 @@ using namespace std;
 
 class Light;
 class Scene;
+class Geometry;
 
 class SceneElement
 {
@@ -40,6 +41,24 @@ public:
 	vec3f min;
 	vec3f max;
 
+	double volumn(const BoundingBox& b)
+	{
+		return add(b).volumn();
+	}
+	
+	BoundingBox add(const BoundingBox& b)
+	{
+		BoundingBox big;
+		big.min = vec3f(minimum(min.n[0], b.min[0]), minimum(min.n[1], b.min[1]), minimum(min.n[2], b.min[2]));
+		big.max = vec3f(maximum(max.n[0], b.max[0]), maximum(max.n[1], b.max[1]), maximum(max.n[2], b.max[2]));
+		return big;
+	}
+
+	double volumn()
+	{
+		return (max.n[0] - min.n[0]) * (max.n[1] - min.n[1]) * (max.n[2] - min.n[2]);
+	}
+
 	void operator=(const BoundingBox& target);
 
 	// Does this bounding box intersect the target?
@@ -53,6 +72,21 @@ public:
 	// in tMax and return true, else return false.
 	bool intersect(const ray& r, double& tMin, double& tMax) const;
 };
+
+class Node
+{
+public:
+	Node(Node* l, Node* r, Geometry* g) : left(l), right(r), object(g){}
+	Node() : left(0), right(0), object(0){}
+	Node* left;
+	Node* right;
+	Geometry* object;
+	BoundingBox bounds;
+	void add(Geometry* obj);
+	void computeVolumn();
+	bool checkIntersect( const ray& r, isect& i ) const;
+};
+
 
 class TransformNode
 {
@@ -248,16 +282,26 @@ public:
 	typedef list<Geometry*>::const_iterator cgiter;
 
     TransformRoot transformRoot;
+	Node* root;
 
 public:
 	Scene() 
-		: transformRoot(), objects(), lights() {}
+		: transformRoot(), objects(), lights(), root(NULL){}
 	virtual ~Scene();
 
 	void add( Geometry* obj )
 	{
 		obj->ComputeBoundingBox();
 		objects.push_back( obj );
+		if (root == NULL)
+		{
+			root = new Node(0, 0, obj);
+		}
+		else
+		{
+			root->add(obj);
+		}
+		root->computeVolumn();
 	}
 	void add( Light* light )
 	{ lights.push_back( light ); }
@@ -284,5 +328,6 @@ private:
 	// are exempt from this requirement.
 	BoundingBox sceneBounds;
 };
+
 
 #endif // __SCENE_H__

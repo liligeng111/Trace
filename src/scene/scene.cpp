@@ -141,6 +141,7 @@ Scene::~Scene()
 // intersection through the reference parameter.
 bool Scene::intersect( const ray& r, isect& i ) const
 {
+	return root->checkIntersect(r, i);
 	typedef list<Geometry*>::const_iterator iter;
 	iter j;
 
@@ -149,7 +150,7 @@ bool Scene::intersect( const ray& r, isect& i ) const
 
 	// try the non-bounded objects
 	for( j = nonboundedobjects.begin(); j != nonboundedobjects.end(); ++j ) {
-		if( (*j)->intersect( r, cur ) ) {
+		if((*j)->intersect( r, cur ) ) {
 			if( !have_one || (cur.t < i.t) ) {
 				i = cur;
 				have_one = true;
@@ -159,7 +160,7 @@ bool Scene::intersect( const ray& r, isect& i ) const
 
 	// try the bounded objects
 	for( j = boundedobjects.begin(); j != boundedobjects.end(); ++j ) {
-		if( (*j)->intersect( r, cur ) ) {
+		if((*j)->intersect( r, cur ) ) {
 			if( !have_one || (cur.t < i.t) ) {
 				i = cur;
 				have_one = true;
@@ -198,4 +199,97 @@ void Scene::initScene()
 		else
 			nonboundedobjects.push_back(*j);
 	}
+}
+
+void Node::add(Geometry* obj)
+{
+	if (left == 0)
+	{
+		left = new Node(0, 0, obj);
+		right = new Node(0, 0, object);
+		object = 0;
+	}
+	else
+	{
+		BoundingBox b = obj->getBoundingBox();
+		if (left->bounds.volumn(b) < right->bounds.volumn(b))
+		{
+			left->add(obj);
+		}
+		else
+		{
+			right->add(obj);
+		}
+	}
+}
+
+void Node::computeVolumn()
+{
+	if (object != 0)
+	{
+		bounds = object->getBoundingBox();
+	}
+	else
+	{
+		left->computeVolumn();
+		right->computeVolumn();
+		bounds = left->bounds.add(right->bounds);
+	}
+}
+
+bool Node::checkIntersect( const ray& r, isect& i ) const
+{
+	double min1;
+	double max1;
+	double min2;
+	double max2;
+	if (bounds.intersect(r, min1, max1))
+	{
+		// it is single object, simple
+		if (object != 0) return object->intersect(r, i);
+		
+		// if left bound is intersected
+		if (left->bounds.intersect(r, min1, max1))
+		{
+			// both bounds are intersected
+			if(right->bounds.intersect(r, min2, max2))
+			{
+				//right bound is befor right bound
+				if (min1 > max2)
+				{	
+					//if right intersect, must be it; else check left
+					if(right->checkIntersect(r, i))
+					{
+						return true;
+					}
+					return left->checkIntersect(r, i);
+
+				}
+				// if left indeed intersect
+				if(left->checkIntersect(r, i))
+				{
+					// left bound is before right, must be it.
+					if (min2 > max1) return true;
+					isect i2;
+					// if right also intersect
+					if (right->checkIntersect(r, i2))
+					{
+						if(i2.t < i.t)
+						{
+							//choose the near one;
+							i = i2;
+						}
+					}
+					return true;
+				}
+				// left not realy intersect, check right
+				return right->checkIntersect(r, i);
+			}
+			//only left bound intersected
+			return left->checkIntersect(r, i);
+		}
+		//left bound is not intersected, check right
+		return right->checkIntersect(r, i);
+	}
+	return false;
 }
