@@ -301,10 +301,11 @@ Fl_Menu_Item TraceUI::menuitems[] = {
 TraceUI::TraceUI() {
 	// init.
 	m_nSize = 150;
-	m_mainWindow = new Fl_Window(100, 40, 320, 100, "Ray <Not Loaded>");
+	int window_height = 110 + NUM_BUTTON * 30 + NUM_SLIDER * 30;
+	m_mainWindow = new Fl_Window(100, 40, 400, window_height, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
 		// install menu bar
-		m_menubar = new Fl_Menu_Bar(0, 0, 320, 25);
+		m_menubar = new Fl_Menu_Bar(0, 0, 400, 25);
 		m_menubar->menu(menuitems);
 
 		// install slider depth
@@ -332,6 +333,25 @@ TraceUI::TraceUI() {
 		m_sizeSlider->value(m_nSize);
 		m_sizeSlider->align(FL_ALIGN_RIGHT);
 		m_sizeSlider->callback(cb_sizeSlides);
+
+		for (int i = 0; i < NUM_SLIDER; i++) {
+			this->m_sliderList[i] = new Fl_Value_Slider(10, 100 + i * 30, 180, 20, SliderList[i].m_name);
+			this->m_sliderList[i]->user_data((void*)this);
+			this->m_sliderList[i]->type(FL_HOR_NICE_SLIDER);
+			this->m_sliderList[i]->labelfont(FL_COURIER);
+			this->m_sliderList[i]->labelsize(12);
+			this->m_sliderList[i]->minimum(SliderList[i].m_minimum);
+			this->m_sliderList[i]->maximum(SliderList[i].m_maximum);
+			this->m_sliderList[i]->step(SliderList[i].m_stepsize);
+			this->m_sliderList[i]->value(SliderList[i].m_value);
+			this->m_sliderList[i]->align(FL_ALIGN_RIGHT);
+			// this->m_sliderList[i]->callback();
+		}
+
+		for (int i = 0; i < NUM_BUTTON; i++) {
+			this->m_checkButtonList[i] = new Fl_Check_Button(10, 100 + (NUM_SLIDER + i) * 30, 50, 20, ButtonList[i].m_name);
+			this->m_checkButtonList[i]->value(ButtonList[i].m_value);
+		}
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));
