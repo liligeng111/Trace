@@ -254,6 +254,8 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 		printf("Time Used: %d.%d s\n", used / 1000, used % 1000);
 
 		pUI->m_traceGlWindow->refresh();
+		
+		pUI->raytracer->antiAliasing();
 
 		// Restore the window label
 		pUI->m_traceGlWindow->label(old_label);		

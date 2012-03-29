@@ -21,6 +21,7 @@ public:
 	void traceSetup( int w, int h );
 	void traceLines( int start = 0, int stop = 10000000 );
 	void tracePixel( int i, int j );
+	void antiAliasing();
 
 	bool loadScene( char* fn );
 
@@ -34,7 +35,7 @@ private:
 	int buffer_width, buffer_height;
 	int bufferSize;
 	Scene *scene;
-	
+	vec3f* col;
 	int maxDepth;
 
 	bool m_bSceneLoaded;

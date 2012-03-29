@@ -1,7 +1,9 @@
 // The main ray tracer.
 
 #include <Fl/fl_ask.h>
-
+#include <fl/fl.h>
+#include "ui\TraceUI.h";
+#include "ui\TraceGLWindow.h"
 #include "RayTracer.h"
 #include "scene/light.h"
 #include "scene/material.h"
@@ -9,6 +11,7 @@
 #include "fileio/read.h"
 #include "fileio/parse.h"
 
+extern TraceUI* traceUI;
 // Trace a top-level ray through normalized window coordinates (x,y)
 // through the projection plane, and out into the scene.  All we do is
 // enter the main ray-tracing method, getting things started by plugging
@@ -86,6 +89,7 @@ RayTracer::RayTracer()
 	buffer = NULL;
 	buffer_width = buffer_height = 256;
 	scene = NULL;
+	col = 0;
 
 	maxDepth = 0;
 
@@ -96,6 +100,7 @@ RayTracer::RayTracer()
 RayTracer::~RayTracer()
 {
 	delete [] buffer;
+	delete [] col;
 	delete scene;
 }
 
@@ -136,7 +141,8 @@ bool RayTracer::loadScene( char* fn )
 
 	bufferSize = buffer_width * buffer_height * 3;
 	buffer = new unsigned char[ bufferSize ];
-	
+	col = new vec3f[buffer_width * buffer_height];
+
 	// separate objects into bounded and unbounded
 	scene->initScene();
 	
@@ -157,8 +163,11 @@ void RayTracer::traceSetup( int w, int h )
 		bufferSize = buffer_width * buffer_height * 3;
 		delete [] buffer;
 		buffer = new unsigned char[ bufferSize ];
+		delete [] col;		
+		col = new vec3f[buffer_width * buffer_height];
 	}
 	memset( buffer, 0, w*h*3 );
+
 }
 
 void RayTracer::traceLines( int start, int stop )
@@ -177,19 +186,57 @@ void RayTracer::traceLines( int start, int stop )
 
 void RayTracer::tracePixel( int i, int j )
 {
-	vec3f col;
-
 	if( !scene )
 		return;
 
 	double x = double(i)/double(buffer_width);
 	double y = double(j)/double(buffer_height);
 
-	col = trace( scene,x,y );
+	int n = i + j * buffer_width;
+	col[n] = trace( scene,x,y );
 
-	unsigned char *pixel = buffer + ( i + j * buffer_width ) * 3;
+	unsigned char *pixel = buffer + (n) * 3;
 
-	pixel[0] = (int)( 255.0 * col[0]);
-	pixel[1] = (int)( 255.0 * col[1]);
-	pixel[2] = (int)( 255.0 * col[2]);
+	pixel[0] = (int)( 255.0 * col[n][0]);
+	pixel[1] = (int)( 255.0 * col[n][1]);
+	pixel[2] = (int)( 255.0 * col[n][2]);
+}
+
+void RayTracer::antiAliasing()
+{
+	char title[256];
+	double x_gap = 0.5 / double(buffer_width);
+	double y_gap = 0.5 / double(buffer_height);
+
+	for(int i = 1; i < buffer_width - 1; i++)
+	{
+		for (int j = 1; j < buffer_height - 1; j++)
+		{
+			if (true)
+			{
+				double x = double(i)/double(buffer_width);
+				double y = double(j)/double(buffer_height);
+				vec3f color = trace( scene,x,y ) +  trace( scene,x + x_gap,y ) +  trace( scene,x - x_gap,y ) +  trace( scene,x,y + y_gap ) + trace( scene,x,y - y_gap );
+				color /= 5;
+				
+				unsigned char *pixel = buffer + (i + j * buffer_width) * 3;
+				pixel[0] = (int)( 255.0 * color[0]);
+				pixel[1] = (int)( 255.0 * color[1]);
+				pixel[2] = (int)( 255.0 * color[2]);
+			}
+		}
+			if (Fl::ready()) 
+			{
+				// refresh
+				traceUI->m_traceGlWindow->refresh();
+			
+				Fl::check();
+				if (Fl::damage())
+				{
+					Fl::flush();
+				}
+			}
+			sprintf(title, "(%d%%) %s", (int)((double)i / (double)buffer_width * 100.0), "Anti Aliasing");
+			traceUI->m_traceGlWindow->label(title);
+	}
 }
