@@ -18,14 +18,21 @@
 
 #include "TraceGLWindow.h"
 
+
 struct TraceUISlider
 {
-	TraceUISlider();
-	TraceUISlider(const char* name, float minimum, float maximum, float stepsize, float value);
-	TraceUISlider(const TraceUISlider &o);
-	TraceUISlider& operator=(const TraceUISlider &o);
-	void SetVals(const char* name, float minimum, float maximum, float stepsize, float value);
-
+	TraceUISlider() {};
+	TraceUISlider(const char* name, float minimum, float maximum, float stepsize, float value) {
+		strcpy(m_name, name);
+		m_minimum = minimum; m_maximum = maximum; m_stepsize = stepsize; m_value = value;
+	}
+	TraceUISlider& operator=(const TraceUISlider& o) {
+		if (this != &o) {
+			strcpy(m_name, o.m_name);
+			m_minimum = o.m_minimum; m_maximum = o.m_maximum; m_stepsize = o.m_stepsize; m_value = o.m_value;
+		}
+		return *this;
+	}
 	char  m_name[128];
 	float m_minimum;
 	float m_maximum;
@@ -33,6 +40,55 @@ struct TraceUISlider
 	float m_value;
 };
 
+struct TraceUIButton
+{
+	TraceUIButton() {};
+	TraceUIButton(const char* name, bool value) {
+		strcpy(m_name, name); m_value = value;
+	}
+	TraceUIButton& operator=(const TraceUIButton& o) {
+		if (this != &o) {
+			strcpy(m_name, o.m_name); m_value = o.m_value;
+		}
+		return *this;
+	}
+	char m_name[128];
+	bool m_value;
+};
+
+typedef enum {
+	ANTIALIAS_B,
+	JITTER_B,
+	HBV_B,
+	NUM_BUTTON
+} BUTTON_ENUM;
+
+typedef enum {
+	ATTENU_CONSTANT,
+	ATTENU_LINEAR,
+	ATTENU_QUAD,
+	AMBIENT_LIGHT,
+	INTENSITY_SCALE,
+	DISTANCE_SCALE,
+	NUM_SLIDER
+} SLIDER_ENUM;
+
+static TraceUIButton ButtonList[NUM_BUTTON] = 
+{
+	TraceUIButton("Antialias Enabled", false),
+	TraceUIButton("Jitter Enabled", false),
+	TraceUIButton("HBV Acceleration Enabled", true)
+};
+
+static TraceUISlider SliderList[NUM_SLIDER] = {
+	// name, min, max, step, value
+	TraceUISlider("Attenuation, Constant", 0, 1, 0.01, 0.25),
+	TraceUISlider("Attenuation, Linear", 0, 1, 0.01, 0.25),
+	TraceUISlider("Attenuation, Quadratic", 0, 1, 0.01, 0.50),
+	TraceUISlider("Ambient Light, Quadratic", 0, 1, 0.01, 0.20),
+	TraceUISlider("Intensity Scale", 1, 10, 1, 1),
+	TraceUISlider("Distance Scale (Log10)", -0.99, 3, 0.01, 1.87)
+};
 
 class TraceUI {
 public:
@@ -49,6 +105,18 @@ public:
 	Fl_Button*			m_stopButton;
 
 	TraceGLWindow*		m_traceGlWindow;
+
+	Fl_Slider* m_sliderList[NUM_SLIDER];
+	Fl_Check_Button* m_checkButtonList[NUM_BUTTON];
+
+	float get_slidervalue(int n) {
+		return m_sliderList[n]->value();
+	}
+
+	bool get_buttonvalue(int n) {
+		return m_checkButtonList->value();
+	}
+
 
 	// member functions
 	void show();
