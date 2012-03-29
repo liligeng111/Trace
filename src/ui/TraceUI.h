@@ -18,6 +18,22 @@
 
 #include "TraceGLWindow.h"
 
+struct TraceUISlider
+{
+	TraceUISlider();
+	TraceUISlider(const char* name, float minimum, float maximum, float stepsize, float value);
+	TraceUISlider(const TraceUISlider &o);
+	TraceUISlider& operator=(const TraceUISlider &o);
+	void SetVals(const char* name, float minimum, float maximum, float stepsize, float value);
+
+	char  m_name[128];
+	float m_minimum;
+	float m_maximum;
+	float m_stepsize;
+	float m_value;
+};
+
+
 class TraceUI {
 public:
 	TraceUI();
