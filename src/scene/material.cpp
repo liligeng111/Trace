@@ -26,7 +26,9 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 
 	vec3f I = ke;
 
-	// TODO: ambient
+	//ambient
+	if (istransmissive) I += scene->ambient.time(ka).time(rate).clamp();
+	else I += scene->ambient.time(ka).clamp();
 
 	list<Light*>::const_iterator begin = scene->beginLights();
 	list<Light*>::const_iterator end = scene->endLights();
@@ -43,6 +45,7 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		//specular
 		vec3f R = i.N * (2 * NL) - L;
 		double RV = -R.dot(r.getDirection());
+		
 		//TODO: where is n£¿
 		double n = 64;
 		I += (atten * pow(RV, n)).time(ks).clamp();

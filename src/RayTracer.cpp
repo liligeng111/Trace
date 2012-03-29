@@ -23,7 +23,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 // Do recursive ray tracing!  You'll want to insert a lot of code here
 // (or places called from here) to handle reflection, refraction, etc etc.
 vec3f RayTracer::traceRay( Scene *scene, const ray& r, 
-	const vec3f& thresh, int depth )
+	const vec3f& thresh, int depth)
 {
 	isect i;
 
@@ -40,11 +40,12 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// rays.
 
 		const Material& m = i.getMaterial();
+
 		vec3f I = m.shade(scene, r, i);
 		if (depth <= 0) return I;
 		
 		//reflection
-		double NL = -i.N.dot(r.getDirection());
+		const double NL = -i.N.dot(r.getDirection());
 		ray R = ray(r.at(i.t), i.N * (2 * NL) + r.getDirection());
 		I += (m.kr.time(traceRay(scene, R, thresh, depth - 1))).clamp(); 
 
@@ -53,7 +54,10 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		double n;
 		if (NL > 0)
 		{
-			n = 1 / m.index;
+			n = 1.0 / m.index;
+			double LONG_TERM = n * NL - sqrt(1 - n * n * (1 - NL * NL));
+			ray T = ray(r.at(i.t), (i.N * LONG_TERM + r.getDirection() * n));
+			I += (m.kt.time(traceRay(scene, T, thresh, depth - 1))).clamp();
 		}
 		else
 		{
@@ -61,11 +65,11 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 			if (1 - n * n * (1 - NL * NL) < 0)
 			{
 				return I;
-			}
-		}
-		double LONG_TERM = n * NL - sqrt(1 - n * n * (1 - NL * NL));
-		ray T = ray(r.at(i.t), (i.N * LONG_TERM + r.getDirection() * n));
-		I += (m.kt.time(traceRay(scene, T, thresh, depth - 1))).clamp(); 
+			}			
+			double LONG_TERM = -(n * (-NL) - sqrt(1 - n * n * (1 - NL * NL)));
+			ray T = ray(r.at(i.t), (i.N * LONG_TERM + r.getDirection() * n));
+			I += (m.kt.time(traceRay(scene, T, thresh, depth - 1))).clamp();
+		} 
 		return I;
 	
 	} else {
