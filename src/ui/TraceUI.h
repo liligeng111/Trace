@@ -72,6 +72,7 @@ struct para
 	int stop;
 	int width;
 	RayTracer* tracer;
+	int id;
 };
 
 #endif

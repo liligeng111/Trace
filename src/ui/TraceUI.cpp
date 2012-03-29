@@ -13,6 +13,7 @@
 #include "../RayTracer.h"
 
 static bool done;
+static int* painted;
 
 //------------------------------------- Help Functions --------------------------------------------
 TraceUI* TraceUI::whoami(Fl_Menu_* o)	// from menu item back to UI itself
@@ -98,7 +99,9 @@ DWORD WINAPI ThreadFunc(HANDLE Thread)
 	int start = ((para*)Thread)->start;
 	int stop = ((para*)Thread)->stop;
 	int width = ((para*)Thread)->width;
+	int id = ((para*)Thread)->id;
 	RayTracer* tracer = ((para*)Thread)->tracer;
+
 	for( int j = start; j < stop; ++j )
 	{
 		for( int i = 0; i < width; ++i )
@@ -106,9 +109,11 @@ DWORD WINAPI ThreadFunc(HANDLE Thread)
 			if (done) return 0;
 			tracer->tracePixel(i,j);
 		}
+		painted[id]++;
 	}
 	return 0;
 }
+
 
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
@@ -136,22 +141,51 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 		pUI->m_traceGlWindow->refresh();
 		Fl::check();
 		Fl::flush();
-		
-	
-		para* p = new para();
-		p->start = height / 2;
-		p->stop = height;
-		p->width = width;
-		p->tracer = pUI->raytracer;
 
 
-		HANDLE Thread;
-		DWORD dwThreadId;
-		Thread=CreateThread(NULL,0,ThreadFunc,p,0,&dwThreadId);	
+		SYSTEM_INFO   SysInfo;   
+        GetSystemInfo(&SysInfo); 
+		int n = SysInfo.dwNumberOfProcessors;
+		HANDLE* Thread = new HANDLE[n];
+		painted = new int[n];
 
-		height /= 2;
+		for (int i = 0; i < n; i++)
+		{	
+			para* p = new para();
+			p->start = height * i / n;
+			p->stop = height * (i + 1) / n;
+			p->width = width;
+			p->tracer = pUI->raytracer;
+			p->id = i;
+			painted[i] = 0;
 
-		for (int y=0; y<height; y++) {
+			DWORD dwThreadId;
+			Thread[i]=CreateThread(NULL,0,ThreadFunc,p,0,&dwThreadId);	
+		}
+
+		int count = 0;
+		while(!done && count != width)
+		{
+			count = 0;
+			if (Fl::ready()) 
+			{
+				// refresh
+				pUI->m_traceGlWindow->refresh();
+			
+				Fl::check();
+				if (Fl::damage())
+				{
+					Fl::flush();
+				}
+			}
+			for (int i = 0; i < n; i++) count += painted[i];
+			sprintf(buffer, "(%d%%) %s", (int)((double)count / (double)height * 100.0), old_label);
+			pUI->m_traceGlWindow->label(buffer);
+			Sleep(100);
+		}
+
+		/*
+		for (int y= height * (n - 1) / n; y<height; y++) {
 			for (int x=0; x<width; x++) {
 				if (done) break;
 				
@@ -194,10 +228,12 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 			
 		}
 		
-		WaitForSingleObject(Thread,INFINITE);
-		CloseHandle(Thread);
+		for (int i = 0; i < n; i++)
+		{
+			WaitForSingleObject(Thread[i],INFINITE);
+			CloseHandle(Thread[i]);
+		}*/
 
-		done=true;
 		pUI->m_traceGlWindow->refresh();
 
 		// Restore the window label
