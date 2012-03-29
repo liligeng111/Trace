@@ -68,8 +68,8 @@ private:
 
 struct para
 {
-	int start;
-	int stop;
+	int N;
+	int height;
 	int width;
 	RayTracer* tracer;
 	int id;

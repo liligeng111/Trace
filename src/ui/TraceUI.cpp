@@ -14,6 +14,8 @@
 
 static bool done;
 static int* painted;
+static bool* jobs;
+
 
 //------------------------------------- Help Functions --------------------------------------------
 TraceUI* TraceUI::whoami(Fl_Menu_* o)	// from menu item back to UI itself
@@ -93,23 +95,34 @@ void TraceUI::cb_depthSlides(Fl_Widget* o, void* v)
 	((TraceUI*)(o->user_data()))->raytracer->setMaxDepth(int( ((Fl_Slider *)o)->value()));
 }
 
-
-DWORD WINAPI ThreadFunc(HANDLE Thread)
-{
-	int start = ((para*)Thread)->start;
-	int stop = ((para*)Thread)->stop;
-	int width = ((para*)Thread)->width;
-	int id = ((para*)Thread)->id;
-	RayTracer* tracer = ((para*)Thread)->tracer;
-
+void paint(int start, int stop, int width, int id, RayTracer* tracer)
+{	
 	for( int j = start; j < stop; ++j )
 	{
 		for( int i = 0; i < width; ++i )
 		{
-			if (done) return 0;
+			if (done) return;
 			tracer->tracePixel(i,j);
 		}
 		painted[id]++;
+	}
+}
+
+DWORD WINAPI ThreadFunc(HANDLE Thread)
+{
+	int width = ((para*)Thread)->width;
+	int id = ((para*)Thread)->id;
+	int height = ((para*)Thread)->height;
+	int N = ((para*)Thread)->N;
+
+	RayTracer* tracer = ((para*)Thread)->tracer;
+	for (int i = 0; i < N; i++)
+	{
+		if (!jobs[i])
+		{
+			jobs[i] = true;
+			paint(height * i / N, height * (i + 1) / N, width, id, tracer);
+		}
 	}
 	return 0;
 }
@@ -135,7 +148,7 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 
 		// start to render here	
 		done=false;
-		clock_t prev, now;
+		clock_t  prev, now;
 		prev=clock();
 		
 		pUI->m_traceGlWindow->refresh();
@@ -148,12 +161,15 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 		int n = SysInfo.dwNumberOfProcessors;
 		HANDLE* Thread = new HANDLE[n];
 		painted = new int[n];
+		int N = 10 * n;
+		jobs = new bool[N];
+		for (int i = 0; i < N; i++) jobs[i] = false;
 
 		for (int i = 0; i < n; i++)
 		{	
 			para* p = new para();
-			p->start = height * i / n;
-			p->stop = height * (i + 1) / n;
+			p->N = N;
+			p->height = height;
 			p->width = width;
 			p->tracer = pUI->raytracer;
 			p->id = i;
@@ -227,12 +243,15 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 			pUI->m_traceGlWindow->label(buffer);
 			
 		}
-		
+		*/
 		for (int i = 0; i < n; i++)
 		{
 			WaitForSingleObject(Thread[i],INFINITE);
 			CloseHandle(Thread[i]);
-		}*/
+		}
+		now = clock();
+		long used = now - prev;
+		printf("Time Used: %d.%d s\n", used / 1000, used % 1000);
 
 		pUI->m_traceGlWindow->refresh();
 
