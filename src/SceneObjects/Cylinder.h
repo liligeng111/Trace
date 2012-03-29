@@ -15,15 +15,15 @@ public:
 	virtual bool intersectLocal( const ray& r, isect& i ) const;
 	virtual bool hasBoundingBoxCapability() const { return true; }
 
-    virtual BoundingBox ComputeLocalBoundingBox()
-    {
-        BoundingBox localbounds;
+	virtual BoundingBox ComputeLocalBoundingBox()
+	{
+		BoundingBox localbounds;
 		localbounds.min = vec3f(-1.0f, -1.0f, 0.0f);
 		localbounds.max = vec3f(1.0f, 1.0f, 1.0f);
-        return localbounds;
-    }
+		return localbounds;
+	}
 
-    bool intersectBody( const ray& r, isect& i ) const;
+	bool intersectBody( const ray& r, isect& i ) const;
 	bool intersectCaps( const ray& r, isect& i ) const;
 
 protected:
