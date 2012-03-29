@@ -308,6 +308,7 @@ public:
 	{ lights.push_back( light ); }
 
 	bool intersect( const ray& r, isect& i ) const;
+	vec3f shadowAttenuation( const ray& r, double t) const;
 	void initScene();
 
 	list<Light*>::const_iterator beginLights() const { return lights.begin(); }

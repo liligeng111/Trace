@@ -17,6 +17,7 @@ static int* painted;
 static bool* jobs;
 
 
+
 //------------------------------------- Help Functions --------------------------------------------
 TraceUI* TraceUI::whoami(Fl_Menu_* o)	// from menu item back to UI itself
 {
@@ -127,7 +128,6 @@ DWORD WINAPI ThreadFunc(HANDLE Thread)
 	return 0;
 }
 
-
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
 	char buffer[256];
@@ -200,63 +200,24 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 			Sleep(100);
 		}
 
-		/*
-		for (int y= height * (n - 1) / n; y<height; y++) {
-			for (int x=0; x<width; x++) {
-				if (done) break;
-				
-				// current time
-				now = clock();
-
-				// check event every 1/2 second
-				if (((double)(now-prev)/CLOCKS_PER_SEC)>0.5) {
-					prev=now;
-
-					if (Fl::ready()) {
-						// refresh
-						pUI->m_traceGlWindow->refresh();
-						// check event
-						Fl::check();
-
-						if (Fl::damage()) {
-							Fl::flush();
-						}
-					}
-				}
-
-				pUI->raytracer->tracePixel( x, y );
-		
-			}
-			if (done) break;
-
-			// flush when finish a row
-			if (Fl::ready()) {
-				// refresh
-				pUI->m_traceGlWindow->refresh();
-
-				if (Fl::damage()) {
-					Fl::flush();
-				}
-			}
-			// update the window label
-			sprintf(buffer, "(%d%%) %s", (int)((double)y / (double)height * 100.0), old_label);
-			pUI->m_traceGlWindow->label(buffer);
-			
-		}
-		*/
 		for (int i = 0; i < n; i++)
 		{
 			WaitForSingleObject(Thread[i],INFINITE);
 			CloseHandle(Thread[i]);
 		}
+
 		now = clock();
 		long used = now - prev;
 		printf("Time Used: %d.%d s\n", used / 1000, used % 1000);
 
 		pUI->m_traceGlWindow->refresh();
-		
-		pUI->raytracer->antiAliasing();
+		sprintf(buffer, "Anti-Aliasing");
+		pUI->m_traceGlWindow->label(buffer);
 
+		if(pUI->get_buttonvalue(ANTIALIAS_B)) pUI->raytracer->antiAliasing();
+		
+
+		pUI->m_traceGlWindow->refresh();
 		// Restore the window label
 		pUI->m_traceGlWindow->label(old_label);		
 	}

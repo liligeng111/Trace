@@ -212,7 +212,15 @@ void RayTracer::antiAliasing()
 	{
 		for (int j = 1; j < buffer_height - 1; j++)
 		{
-			if (true)
+			bool check = false;
+			double d = 0.1;
+			int n = i + j * buffer_width;
+			if ((col[n] - col[n + 1]).length() > d) check = true;
+			if ((col[n] - col[n - 1]).length() > d) check = true;
+			if ((col[n] - col[n + buffer_height]).length() > d) check = true;
+			if ((col[n] - col[n - buffer_height]).length() > d) check = true;
+
+			if (check)
 			{
 				double x = double(i)/double(buffer_width);
 				double y = double(j)/double(buffer_height);
@@ -225,18 +233,5 @@ void RayTracer::antiAliasing()
 				pixel[2] = (int)( 255.0 * color[2]);
 			}
 		}
-			if (Fl::ready()) 
-			{
-				// refresh
-				traceUI->m_traceGlWindow->refresh();
-			
-				Fl::check();
-				if (Fl::damage())
-				{
-					Fl::flush();
-				}
-			}
-			sprintf(title, "(%d%%) %s", (int)((double)i / (double)buffer_width * 100.0), "Anti Aliasing");
-			traceUI->m_traceGlWindow->label(title);
 	}
 }

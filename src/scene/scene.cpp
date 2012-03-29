@@ -293,3 +293,7 @@ bool Node::checkIntersect( const ray& r, isect& i ) const
 	}
 	return false;
 }
+vec3f Scene::shadowAttenuation( const ray& r, double t) const
+{
+
+}
