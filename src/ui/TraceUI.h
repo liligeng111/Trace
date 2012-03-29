@@ -114,7 +114,7 @@ public:
 	}
 
 	bool get_buttonvalue(int n) {
-		return m_checkButtonList->value();
+		return m_checkButtonList[n]->value();
 	}
 
 
