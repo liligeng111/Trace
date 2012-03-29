@@ -15,8 +15,8 @@
 // in an initial ray weight of (0.0,0.0,0.0) and an initial recursion depth of 0.
 vec3f RayTracer::trace( Scene *scene, double x, double y )
 {
-    ray r( vec3f(0,0,0), vec3f(0,0,0) );
-    scene->getCamera()->rayThrough( x,y,r );
+	ray r( vec3f(0,0,0), vec3f(0,0,0) );
+	scene->getCamera()->rayThrough( x,y,r );
 	return traceRay( scene, r, vec3f(1.0,1.0,1.0), maxDepth ).clamp();
 }
 
