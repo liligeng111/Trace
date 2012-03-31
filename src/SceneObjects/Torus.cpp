@@ -2,7 +2,6 @@
 #include <cmath>
 
 #include "Torus.h"
-#include "../math/quartic.hpp"
 
 double solveQuartic(double a, double b, double c, double d, double e)
 {
@@ -63,8 +62,6 @@ double solveQuartic(double a, double b, double c, double d, double e)
 	double r2 = T1 - R4 + sqrt(R5 - R6);
 	double r3 = T1 + R4 - sqrt(R5 + R6);
 	double r4 = T1 + R4 + sqrt(R5 + R6);
-
-	magnet::math::quarticSolve(a3, a2, a1, a0, r1, r2, r3, r4);
 
 	printf("%f\n", r1);
 	printf("%f\n", r2);

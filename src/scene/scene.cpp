@@ -141,7 +141,8 @@ Scene::~Scene()
 // intersection through the reference parameter.
 bool Scene::intersect( const ray& r, isect& i ) const
 {
-	return root->checkIntersect(r, i);
+	if(traceUI->get_buttonvalue(HBV_B)) return root->checkIntersect(r, i);
+	
 	typedef list<Geometry*>::const_iterator iter;
 	iter j;
 

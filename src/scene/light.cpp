@@ -43,7 +43,7 @@ double PointLight::distanceAttenuation( const vec3f& P ) const
 	double l = traceUI->get_slidervalue(ATTENU_LINEAR);
 	double q = traceUI->get_slidervalue(ATTENU_QUAD);
 	double d = 1.0 / (c + l * t + q * t * t);
-	if (d > 1) d = 1.0;
+	if (d < 1) d = 1.0;
 
 	return d;
 }
