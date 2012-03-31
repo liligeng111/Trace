@@ -49,7 +49,8 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		
 		//reflection
 		const double NL = -i.N.dot(r.getDirection());
-		ray R = ray(r.at(i.t), i.N * (2 * NL) + r.getDirection());
+		vec3f ref = i.N * (2 * NL) + r.getDirection();
+		ray R = ray(r.at(i.t), ref);
 		I += (m.kr.time(traceRay(scene, R, thresh, depth - 1))).clamp(); 
 
 		//refraction		

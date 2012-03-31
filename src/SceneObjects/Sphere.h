@@ -10,6 +10,7 @@ public:
 	Sphere( Scene *scene, Material *mat )
 		: MaterialSceneObject( scene, mat )
 	{
+		caustic = true;
 	}
     
 	virtual bool intersectLocal( const ray& r, isect& i ) const;

@@ -18,6 +18,7 @@
 #include "../SceneObjects/Cone.h"
 #include "../SceneObjects/Cylinder.h"
 #include "../SceneObjects/Sphere.h"
+#include "../SceneObjects/Torus.h"
 #include "../SceneObjects/Square.h"
 #include "../scene/light.h"
 
@@ -326,6 +327,10 @@ static void processGeometry( string name, Obj *child, Scene *scene,
 			obj = new Cone( scene, mat, height, bottom_radius, top_radius, capped );
 		} else if( name == "square" ) {
 			obj = new Square( scene, mat );
+		} else if( name == "torus" ) {
+			double radius = 0.3;
+			maybeExtractField( child, "radius", radius );
+			obj = new Torus( scene, mat, radius );
 		}
 
         obj->setTransform(transform);
@@ -546,6 +551,7 @@ static void processObject( Obj *obj, Scene *scene, mmap& materials )
 				name == "box" ||
 				name == "cylinder" ||
 				name == "cone" ||
+				name == "torus" ||
 				name == "square" ||
 				name == "translate" ||
 				name == "rotate" ||

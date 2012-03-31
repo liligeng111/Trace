@@ -293,7 +293,25 @@ bool Node::checkIntersect( const ray& r, isect& i ) const
 	}
 	return false;
 }
-vec3f Scene::shadowAttenuation( const ray& r, double t) const
+vec3f Node::shadowAttenuation( const ray& r, double t) const
 {
+	double min1;
+	double max1;
+	double min2;
+	double max2;
+	isect i;
 
+	if (!bounds.intersect(r, min1, max1)) return vec3f(1, 1, 1);
+
+	//all objects are behind the ray
+	if(min1 > t) return vec3f(1, 1, 1);
+
+	// it is single object, simple
+	if (object != 0) 
+	{
+		if(object->intersect(r, i)) return i.getMaterial().kt;
+		else return vec3f(1, 1, 1);
+	}
+		
+	return left->shadowAttenuation(r, t).time(right->shadowAttenuation(r, t));
 }

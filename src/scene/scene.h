@@ -85,6 +85,7 @@ public:
 	void add(Geometry* obj);
 	void computeVolumn();
 	bool checkIntersect( const ray& r, isect& i ) const;
+	vec3f shadowAttenuation( const ray& r, double t) const;
 };
 
 
@@ -229,11 +230,14 @@ public:
 	void setTransform(TransformNode *transform) { this->transform = transform; };
 	
 	Geometry( Scene *scene ) 
-		: SceneElement( scene ) {}
+		: SceneElement( scene ), caustic(false) {}
+	
+	bool isCaustic() const {return caustic;}
 
 protected:
 	BoundingBox bounds;
 	TransformNode *transform;
+	bool caustic;
 };
 
 // A SceneObject is a real actual thing that we want to model in the 
@@ -308,7 +312,6 @@ public:
 	{ lights.push_back( light ); }
 
 	bool intersect( const ray& r, isect& i ) const;
-	vec3f shadowAttenuation( const ray& r, double t) const;
 	void initScene();
 
 	list<Light*>::const_iterator beginLights() const { return lights.begin(); }
