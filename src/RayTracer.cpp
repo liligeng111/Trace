@@ -203,13 +203,16 @@ void RayTracer::tracePixel( int i, int j )
 	pixel[2] = (int)( 255.0 * col[n][2]);
 }
 
-void RayTracer::antiAliasing()
+void RayTracer::antiAliasing(int part)
 {
 	char title[256];
 	double x_gap = 0.5 / double(buffer_width);
 	double y_gap = 0.5 / double(buffer_height);
 
-	for(int i = 1; i < buffer_width - 1; i++)
+	int end = (part == 0) ? buffer_width / 2 : buffer_width - 1;
+	int start = (part == 0) ? 1 : buffer_width / 2;
+
+	for(int i = start; i < end; i++)
 	{
 		for (int j = 1; j < buffer_height - 1; j++)
 		{

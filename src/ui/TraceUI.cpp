@@ -128,6 +128,19 @@ DWORD WINAPI ThreadFunc(HANDLE Thread)
 	return 0;
 }
 
+
+DWORD WINAPI AA(HANDLE Thread)
+{
+	int width = ((para*)Thread)->width;
+	int id = ((para*)Thread)->id;
+	int height = ((para*)Thread)->height;
+	int N = ((para*)Thread)->N;
+
+	RayTracer* tracer = ((para*)Thread)->tracer;
+	tracer->antiAliasing(id);
+	return 0;
+}
+
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
 	char buffer[256];
@@ -214,8 +227,17 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 		sprintf(buffer, "Anti-Aliasing");
 		pUI->m_traceGlWindow->label(buffer);
 
-		if(pUI->get_buttonvalue(ANTIALIAS_B)) pUI->raytracer->antiAliasing();
-		
+		if(pUI->get_buttonvalue(ANTIALIAS_B))
+		{
+			pUI->raytracer->antiAliasing(0);
+			para* p = new para();
+			p->tracer = pUI->raytracer;
+			p->id = 1;
+			DWORD dwThreadId;
+			HANDLE AAT=CreateThread(NULL,0,AA,p,0,&dwThreadId);	
+			WaitForSingleObject(AAT,INFINITE);
+			CloseHandle(AAT);
+		}		
 
 		pUI->m_traceGlWindow->refresh();
 		// Restore the window label
